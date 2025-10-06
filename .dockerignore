@@ -1,0 +1,40 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+tringldev-server
+tringldev-server.exe
+
+# Test files
+*.test
+*.out
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Documentation
+*.md
+!README.md
+
+# Git
+.git
+.gitignore
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build output
+dist/
+build/

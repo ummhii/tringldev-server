@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - LASTFM_API_KEY=${LASTFM_API_KEY}
+      - LASTFM_USERNAME=${LASTFM_USERNAME}
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - GITHUB_USERNAME=${GITHUB_USERNAME}
+    env_file:
+      - .env
+    restart: unless-stopped
