@@ -81,7 +81,7 @@ func (s *Service) GetPinnedRepository() (*PinnedRepo, error) {
 	}
 
 	// Return the first pinned repository
-	repo := repos[len(repos)-1]
+	repo := repos[2]
 
 	return toPinnedRepo(&repo), nil
 }
