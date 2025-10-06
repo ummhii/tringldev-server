@@ -52,6 +52,25 @@ type NowPlayingInfo struct {
 	PlayedAt    string `json:"playedAt,omitempty"`
 }
 
+type topArtistsResponse struct {
+	TopArtists struct {
+		Artist []struct {
+			Name      string `json:"name"`
+			PlayCount string `json:"playcount"`
+			URL       string `json:"url"`
+		} `json:"artist"`
+	} `json:"topartists"`
+}
+
+type TopArtist struct {
+	Name      string `json:"name"`
+	PlayCount string `json:"playcount"`
+}
+
+type TopArtistsInfo struct {
+	Artists []TopArtist `json:"artists"`
+}
+
 func NewService(cfg *config.Config) *Service {
 	return &Service{
 		config: cfg,
@@ -119,6 +138,44 @@ func (s *Service) GetCurrentlyPlaying() (*NowPlayingInfo, error) {
 		if err == nil {
 			info.PlayedAt = time.Unix(timestamp, 0).Format(time.RFC3339)
 		}
+	}
+
+	return info, nil
+}
+
+func (s *Service) GetTopWeeklyArtists() (*TopArtistsInfo, error) {
+	apiURL := fmt.Sprintf(
+		"https://ws.audioscrobbler.com/2.0/?method=user.gettopartists&user=%s&api_key=%s&format=json&period=7day&limit=10",
+		url.QueryEscape(s.config.LastFMUsername),
+		url.QueryEscape(s.config.LastFMAPIKey),
+	)
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Get(apiURL)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch from Last.fm: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("last.fm api error %d: %s", resp.StatusCode, string(body))
+	}
+
+	var lastfmResp topArtistsResponse
+	if err := json.NewDecoder(resp.Body).Decode(&lastfmResp); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	info := &TopArtistsInfo{
+		Artists: make([]TopArtist, 0),
+	}
+
+	for _, artist := range lastfmResp.TopArtists.Artist {
+		info.Artists = append(info.Artists, TopArtist{
+			Name:      artist.Name,
+			PlayCount: artist.PlayCount,
+		})
 	}
 
 	return info, nil

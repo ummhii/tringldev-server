@@ -1,11 +1,11 @@
 # tringl.dev backend
 
-A personal backend API for displaying currently playing songs and pinned GitHub projects and other stuff.
+A personal backend API for displaying last.fm stats and pinned GitHub projects and other stuff.
 
 ## Features
 
-- **Now Playing**: Displays the current song you're listening to via Last.fm
-- **Pinned Repository**: Shows one of your GitHub repositories
+- **Last.fm Stats**: Displays Last.fm stats.
+- **Github Stats**: Shows one of your GitHub repositories
 - **Contact Form**: Receive messages via Discord webhook
 
 ## API Endpoints
@@ -41,6 +41,25 @@ Returns the currently playing song from Last.fm (or most recently played)
 {
   "isPlaying": false,
   "lastUpdated": "2025-10-06T12:00:00Z"
+}
+```
+
+### `GET /api/top-artists`
+Returns your top artists for the past 7 days from Last.fm
+
+**Response:**
+```json
+{
+  "artists": [
+    {
+      "name": "Artist Name",
+      "playcount": "123"
+    },
+    {
+      "name": "Another Artist",
+      "playcount": "45"
+    }
+  ]
 }
 ```
 
@@ -182,6 +201,9 @@ curl http://localhost:8080/
 
 # Now playing
 curl http://localhost:8080/api/now-playing
+
+# Top weekly artists
+curl http://localhost:8080/api/top-artists
 
 # Pinned repo (most recent)
 curl http://localhost:8080/api/pinned-repo

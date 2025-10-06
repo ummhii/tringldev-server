@@ -67,6 +67,27 @@ func main() {
 		}
 	})
 
+	// Last.fm endpoint - Get top weekly artists
+	app.Get("/api/top-artists", generalLimiter.Handler(), func(ctx iris.Context) {
+		topArtists, err := lastfmService.GetTopWeeklyArtists()
+		if err != nil {
+			log.Printf("Error fetching top artists: %v\n", err)
+			ctx.StatusCode(iris.StatusInternalServerError)
+			err := ctx.JSON(iris.Map{
+				"error": "Failed to fetch top artists",
+			})
+			if err != nil {
+				log.Printf("Failed to send error response: %v\n", err)
+			}
+			return
+		}
+
+		err = ctx.JSON(topArtists)
+		if err != nil {
+			log.Printf("Failed to send response: %v\n", err)
+		}
+	})
+
 	// GitHub endpoint - Get pinned repository
 	app.Get("/api/pinned-repo", generalLimiter.Handler(), func(ctx iris.Context) {
 		// Optional: Get specific repo name from query parameter
