@@ -179,7 +179,3 @@ By default, CORS is enabled for all origins (`*`). For production, update the CO
 - **Spotify Token Issues**: Make sure your refresh token is valid and hasn't expired
 - **GitHub Rate Limiting**: Use a GitHub token to increase API rate limits
 - **Missing Environment Variables**: Check the console logs for warnings about missing configuration
-
-## License
-
-MIT
