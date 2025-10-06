@@ -2,11 +2,13 @@ package main
 
 import (
 	"log"
+	"time"
 
 	"tringldev-server/internal/config"
 	"tringldev-server/internal/contact"
 	"tringldev-server/internal/github"
 	"tringldev-server/internal/lastfm"
+	"tringldev-server/internal/middleware"
 
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/middleware/cors"
@@ -21,13 +23,18 @@ func main() {
 
 	app := iris.New()
 
+	// CORS middleware
 	crs := cors.New().
-		AllowOrigin("*").
+		AllowOrigin("https://tringl.dev"). // Restrict to this domain only
+		AllowOrigin("127.0.0.1").
 		Handler()
 
 	app.UseRouter(crs)
 
-	// Health check endpoint
+	generalLimiter := middleware.NewRateLimiter(1*time.Second, 10)
+
+	contactLimiter := middleware.NewRateLimiter(12*time.Second, 5)
+
 	app.Get("/", func(ctx iris.Context) {
 		err := ctx.JSON(iris.Map{
 			"status":  "ok",
@@ -41,7 +48,7 @@ func main() {
 	})
 
 	// Last.fm endpoint - Get currently playing song
-	app.Get("/api/now-playing", func(ctx iris.Context) {
+	app.Get("/api/now-playing", generalLimiter.Handler(), func(ctx iris.Context) {
 		nowPlaying, err := lastfmService.GetCurrentlyPlaying()
 		if err != nil {
 			log.Printf("Error fetching now playing: %v\n", err)
@@ -62,7 +69,7 @@ func main() {
 	})
 
 	// GitHub endpoint - Get pinned repository
-	app.Get("/api/pinned-repo", func(ctx iris.Context) {
+	app.Get("/api/pinned-repo", generalLimiter.Handler(), func(ctx iris.Context) {
 		// Optional: Get specific repo name from query parameter
 		repoName := ctx.URLParam("repo")
 
@@ -93,11 +100,10 @@ func main() {
 		}
 	})
 
-	// Contact form endpoint
-	app.Post("/api/contact", func(ctx iris.Context) {
+	// Contact form endpoint (stricter rate limit)
+	app.Post("/api/contact", contactLimiter.Handler(), func(ctx iris.Context) {
 		var req contact.ContactRequest
 
-		// Parse form data
 		if err := ctx.ReadForm(&req); err != nil {
 			log.Printf("Error parsing contact form: %v\n", err)
 			ctx.StatusCode(iris.StatusBadRequest)
@@ -105,7 +111,6 @@ func main() {
 			return
 		}
 
-		// Send via Discord or Email (automatically chooses based on config)
 		err := contactService.Send(&req)
 		if err != nil {
 			log.Printf("Error sending contact message: %v\n", err)
@@ -114,7 +119,6 @@ func main() {
 			return
 		}
 
-		// Success response (HTMX will swap this into the response div)
 		ctx.HTML(`<div class="success-message">Message sent successfully! I'll get back to you soon.</div>`)
 	})
 

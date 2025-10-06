@@ -4,7 +4,7 @@ A personal backend API for displaying currently playing songs and pinned GitHub 
 
 ## Features
 
-- **Now Playing**: Displays the current song you're listening to via Last.fm (works with Spotify, Apple Music, YouTube Music, etc.)
+- **Now Playing**: Displays the current song you're listening to via Last.fm
 - **Pinned Repository**: Shows one of your GitHub repositories
 - **Contact Form**: Receive messages via Discord webhook
 
@@ -69,11 +69,42 @@ Returns a pinned GitHub repository
 ```
 
 ### `POST /api/contact`
-Sends a contact form message via Discord or email
+Sends a contact form message via Discord webhook
 
 **Form Data:**
 - `name` (required): Sender's name
 - `email` (optional): Sender's email
+- `message` (required): Message content
+
+**Example:**
+```bash
+curl -X POST http://localhost:8080/api/contact \
+  -d "name=John Doe&email=john@example.com&message=Hello!"
+```
+
+**Response (HTML for HTMX):**
+```html
+<div class="success-message">Message sent successfully! I'll get back to you soon.</div>
+```
+
+Messages are sent to your Discord channel via webhook.
+
+**Rate Limit:** 5 requests per minute per IP address
+
+## Rate Limiting
+
+All API endpoints are protected with rate limiting:
+
+- **General Endpoints** (`/api/now-playing`, `/api/pinned-repo`): 60 requests per minute (burst of 10)
+- **Contact Form** (`/api/contact`): 5 requests per minute (burst of 5)
+
+When rate limit is exceeded, you'll receive a `429 Too Many Requests` response:
+```json
+{
+  "error": "Rate limit exceeded. Please try again later."
+}
+```
+
 - `message` (required): Message content
 
 **Example:**
@@ -124,19 +155,21 @@ The server will start on `http://localhost:8080` (or the port specified in `.env
 
 ### Project Structure
 ```
-.
+tringldev-server/
 ├── cmd/
 │   └── server/
-│       └── main.go      # Main application entry point & routes
+│       └── main.go              # Main application entry point & routes
 └── internal/
     ├── config/
-    │   └── config.go    # Configuration management
+    │   └── config.go            # Configuration management
+    ├── middleware/
+    │   └── ratelimit.go         # Rate limiting middleware
     ├── lastfm/
-    │   └── service.go   # Last.fm API service
+    │   └── service.go           # Last.fm API service
     ├── github/
-    │   └── service.go   # GitHub API service
+    │   └── service.go           # GitHub API service
     └── contact/
-        └── service.go   # Contact form service (Discord webhook)
+        └── service.go           # Contact form service (Discord webhook)
 ```
 
 ### Testing the API
