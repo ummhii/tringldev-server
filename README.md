@@ -12,15 +12,6 @@ A personal backend API for displaying currently playing songs and pinned GitHub 
 - **Docker Ready**: Containerized for easy deployment
 - **Cloud Ready**: Deploy to Fly.io, Railway, or any container platform
 
-## Quick Links
-
-- **[Quick Start](QUICKSTART.md)** - Get running locally in 3 minutes
-- **[Contact Form Setup](CONTACT_FORM_SETUP.md)** - Set up Discord or email notifications
-- **[Deploy Guide](DEPLOY.md)** - Deploy to cloud in 5 minutes
-- **[Last.fm Setup](LASTFM_SETUP.md)** - Detailed Last.fm configuration
-- **[Cloud Deployment](CLOUDFLARE_DEPLOYMENT.md)** - All deployment options
-- **[CI/CD Setup](CI_CD.md)** - Automated deployment
-
 ## API Endpoints
 
 ### `GET /`
