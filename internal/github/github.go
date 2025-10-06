@@ -80,8 +80,8 @@ func (s *Service) GetPinnedRepository() (*PinnedRepo, error) {
 		return nil, fmt.Errorf("no repositories found")
 	}
 
-	// Return the first pinned repository
-	repo := repos[2]
+	// Return the most recently updated repo
+	repo := repos[0]
 
 	return toPinnedRepo(&repo), nil
 }

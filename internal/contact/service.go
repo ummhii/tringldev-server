@@ -52,7 +52,6 @@ func NewService(cfg *config.Config) *Service {
 
 // Send sends the contact form via Discord webhook
 func (s *Service) Send(req *ContactRequest) error {
-	// Validate input
 	if strings.TrimSpace(req.Name) == "" {
 		return fmt.Errorf("name is required")
 	}
@@ -67,7 +66,7 @@ func (s *Service) Send(req *ContactRequest) error {
 	return s.SendToDiscord(req)
 }
 
-// SendToDiscord sends the contact form to a Discord webhook
+// sends the contact form to a Discord webhook
 func (s *Service) SendToDiscord(req *ContactRequest) error {
 	if s.config.DiscordWebhook == "" {
 		return fmt.Errorf("discord webhook not configured")
@@ -75,9 +74,9 @@ func (s *Service) SendToDiscord(req *ContactRequest) error {
 
 	// Build Discord embed
 	embed := DiscordEmbed{
-		Title:       "📧 New Contact Form Submission",
+		Title:       "New Contact Form Submission",
 		Description: req.Message,
-		Color:       5814783, // Blue color
+		Color:       5814783, // Blue
 		Timestamp:   time.Now().Format(time.RFC3339),
 		Fields: []DiscordEmbedField{
 			{
@@ -101,13 +100,11 @@ func (s *Service) SendToDiscord(req *ContactRequest) error {
 		Embeds: []DiscordEmbed{embed},
 	}
 
-	// Marshal to JSON
 	payload, err := json.Marshal(webhook)
 	if err != nil {
 		return fmt.Errorf("failed to marshal discord webhook: %w", err)
 	}
 
-	// Send HTTP POST to Discord webhook
 	resp, err := http.Post(s.config.DiscordWebhook, "application/json", bytes.NewBuffer(payload))
 	if err != nil {
 		return fmt.Errorf("failed to send discord webhook: %w", err)

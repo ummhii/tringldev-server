@@ -1,13 +1,25 @@
-# TringlDev Server API
+# tringl.dev backend
 
-A personal backend API for displaying currently playing Spotify songs and pinned GitHub projects.
+A personal backend API for displaying currently playing songs and pinned GitHub projects and other stuff.
 
 ## Features
 
 - **Now Playing**: Displays the current song you're listening to via Last.fm (works with Spotify, Apple Music, YouTube Music, etc.)
 - **Pinned Repository**: Shows one of your GitHub repositories
+- **Contact Form**: Receive messages via Discord webhook
 - **CORS Enabled**: Ready to be consumed by your frontend
 - **Simple Setup**: No OAuth complexity - just an API key!
+- **Docker Ready**: Containerized for easy deployment
+- **Cloud Ready**: Deploy to Fly.io, Railway, or any container platform
+
+## Quick Links
+
+- **[Quick Start](QUICKSTART.md)** - Get running locally in 3 minutes
+- **[Contact Form Setup](CONTACT_FORM_SETUP.md)** - Set up Discord or email notifications
+- **[Deploy Guide](DEPLOY.md)** - Deploy to cloud in 5 minutes
+- **[Last.fm Setup](LASTFM_SETUP.md)** - Detailed Last.fm configuration
+- **[Cloud Deployment](CLOUDFLARE_DEPLOYMENT.md)** - All deployment options
+- **[CI/CD Setup](CI_CD.md)** - Automated deployment
 
 ## API Endpoints
 
@@ -68,6 +80,27 @@ Returns a pinned GitHub repository
   "homepage": "https://example.com"
 }
 ```
+
+### `POST /api/contact`
+Sends a contact form message via Discord or email
+
+**Form Data:**
+- `name` (required): Sender's name
+- `email` (optional): Sender's email
+- `message` (required): Message content
+
+**Example:**
+```bash
+curl -X POST http://localhost:8080/api/contact \
+  -d "name=John Doe&email=john@example.com&message=Hello!"
+```
+
+**Response (HTML for HTMX):**
+```html
+<div class="success-message">Message sent successfully! I'll get back to you soon.</div>
+```
+
+Messages are sent to your Discord channel via webhook. See [CONTACT_FORM_SETUP.md](CONTACT_FORM_SETUP.md) for setup instructions.
 
 ## Setup
 

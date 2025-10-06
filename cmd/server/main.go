@@ -101,7 +101,7 @@ func main() {
 		if err := ctx.ReadForm(&req); err != nil {
 			log.Printf("Error parsing contact form: %v\n", err)
 			ctx.StatusCode(iris.StatusBadRequest)
-			ctx.HTML(`<div class="error-message">❌ Invalid form data</div>`)
+			ctx.HTML(`<div class="error-message">Invalid form data</div>`)
 			return
 		}
 
@@ -110,12 +110,12 @@ func main() {
 		if err != nil {
 			log.Printf("Error sending contact message: %v\n", err)
 			ctx.StatusCode(iris.StatusInternalServerError)
-			ctx.HTML(`<div class="error-message">❌ Failed to send message. Please try again later.</div>`)
+			ctx.HTML(`<div class="error-message">Failed to send message. Please try again later.</div>`)
 			return
 		}
 
 		// Success response (HTMX will swap this into the response div)
-		ctx.HTML(`<div class="success-message">✅ Message sent successfully! I'll get back to you soon.</div>`)
+		ctx.HTML(`<div class="success-message">Message sent successfully! I'll get back to you soon.</div>`)
 	})
 
 	addr := ":" + cfg.Port
