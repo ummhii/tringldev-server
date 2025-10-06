@@ -7,10 +7,6 @@ A personal backend API for displaying currently playing songs and pinned GitHub 
 - **Now Playing**: Displays the current song you're listening to via Last.fm (works with Spotify, Apple Music, YouTube Music, etc.)
 - **Pinned Repository**: Shows one of your GitHub repositories
 - **Contact Form**: Receive messages via Discord webhook
-- **CORS Enabled**: Ready to be consumed by your frontend
-- **Simple Setup**: No OAuth complexity - just an API key!
-- **Docker Ready**: Containerized for easy deployment
-- **Cloud Ready**: Deploy to Fly.io, Railway, or any container platform
 
 ## API Endpoints
 
@@ -91,7 +87,7 @@ curl -X POST http://localhost:8080/api/contact \
 <div class="success-message">Message sent successfully! I'll get back to you soon.</div>
 ```
 
-Messages are sent to your Discord channel via webhook. See [CONTACT_FORM_SETUP.md](CONTACT_FORM_SETUP.md) for setup instructions.
+Messages are sent to your Discord channel via webhook.
 
 ## Setup
 
@@ -109,21 +105,6 @@ cp .env.example .env
 ```
 
 Edit `.env` and fill in your credentials:
-
-#### Last.fm Setup:
-1. Go to [Last.fm API Account Creation](https://www.last.fm/api/account/create)
-2. Create an app and get your API key
-3. Add API key and your Last.fm username to your `.env` file
-4. Connect your music service (Spotify, Apple Music, etc.) to Last.fm
-5. Start listening to music!
-
-See [LASTFM_SETUP.md](LASTFM_SETUP.md) for detailed instructions.
-
-#### GitHub Setup:
-1. Go to [GitHub Settings → Developer settings → Personal access tokens](https://github.com/settings/tokens)
-2. Generate a new token (classic)
-3. Select scopes: `public_repo` (for public repositories)
-4. Copy the token and your username
 
 ### 3. Run the Server
 
@@ -144,12 +125,18 @@ The server will start on `http://localhost:8080` (or the port specified in `.env
 ### Project Structure
 ```
 .
-├── main.go          # Main application entry point
-├── config.go        # Configuration loading
-├── spotify.go       # Spotify API service
-├── github.go        # GitHub API service
-├── .env.example     # Example environment variables
-└── README.md        # This file
+├── cmd/
+│   └── server/
+│       └── main.go      # Main application entry point & routes
+└── internal/
+    ├── config/
+    │   └── config.go    # Configuration management
+    ├── lastfm/
+    │   └── service.go   # Last.fm API service
+    ├── github/
+    │   └── service.go   # GitHub API service
+    └── contact/
+        └── service.go   # Contact form service (Discord webhook)
 ```
 
 ### Testing the API
@@ -168,14 +155,23 @@ curl http://localhost:8080/api/pinned-repo
 
 # Specific repo
 curl http://localhost:8080/api/pinned-repo?repo=your-repo-name
+
+# Contact form
+curl -X POST http://localhost:8080/api/contact \
+  -d "name=Test&email=test@example.com&message=Hello!"
 ```
 
 ## CORS Configuration
 
 By default, CORS is enabled for all origins (`*`). For production, update the CORS configuration in `main.go` to only allow your frontend domain.
 
-## Troubleshooting
+## Deployment
+Quick deploy to Fly.io:
 
-- **Spotify Token Issues**: Make sure your refresh token is valid and hasn't expired
-- **GitHub Rate Limiting**: Use a GitHub token to increase API rate limits
-- **Missing Environment Variables**: Check the console logs for warnings about missing configuration
+```bash
+fly launch
+fly secrets set LASTFM_API_KEY=your_key LASTFM_USERNAME=your_username
+fly secrets set GITHUB_TOKEN=your_token GITHUB_USERNAME=your_username
+fly secrets set DISCORD_WEBHOOK=your_webhook_url
+fly deploy
+```
