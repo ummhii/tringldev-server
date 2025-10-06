@@ -25,8 +25,7 @@ func main() {
 
 	// CORS middleware
 	crs := cors.New().
-		AllowOrigin("https://tringl.dev"). // Restrict to this domain only
-		AllowOrigin("127.0.0.1").
+		AllowOrigin("*"). // Allow all origins
 		Handler()
 
 	app.UseRouter(crs)
