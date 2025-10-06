@@ -143,11 +143,21 @@ func (s *Service) GetCurrentlyPlaying() (*NowPlayingInfo, error) {
 	return info, nil
 }
 
-func (s *Service) GetTopWeeklyArtists() (*TopArtistsInfo, error) {
+// limit: number of artists to return (default: 10, max: 50)
+func (s *Service) GetTopWeeklyArtists(limit int) (*TopArtistsInfo, error) {
+	// Validate and set default limit
+	if limit <= 0 {
+		limit = 10
+	}
+	if limit > 50 {
+		limit = 50
+	}
+
 	apiURL := fmt.Sprintf(
-		"https://ws.audioscrobbler.com/2.0/?method=user.gettopartists&user=%s&api_key=%s&format=json&period=7day&limit=10",
+		"https://ws.audioscrobbler.com/2.0/?method=user.gettopartists&user=%s&api_key=%s&format=json&period=7day&limit=%d",
 		url.QueryEscape(s.config.LastFMUsername),
 		url.QueryEscape(s.config.LastFMAPIKey),
+		limit,
 	)
 
 	client := &http.Client{Timeout: 10 * time.Second}

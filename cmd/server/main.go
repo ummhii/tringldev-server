@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"strconv"
 	"time"
 
 	"tringldev-server/internal/config"
@@ -69,7 +70,17 @@ func main() {
 
 	// Last.fm endpoint - Get top weekly artists
 	app.Get("/api/top-artists", generalLimiter.Handler(), func(ctx iris.Context) {
-		topArtists, err := lastfmService.GetTopWeeklyArtists()
+		// Optional: Get limit from query parameter (default: 10, max: 50)
+		limitStr := ctx.URLParam("limit")
+		limit := 10 // default
+
+		if limitStr != "" {
+			if parsedLimit, err := strconv.Atoi(limitStr); err == nil {
+				limit = parsedLimit
+			}
+		}
+
+		topArtists, err := lastfmService.GetTopWeeklyArtists(limit)
 		if err != nil {
 			log.Printf("Error fetching top artists: %v\n", err)
 			ctx.StatusCode(iris.StatusInternalServerError)
