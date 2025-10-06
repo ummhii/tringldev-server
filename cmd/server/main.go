@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"tringldev-server/internal/config"
+	"tringldev-server/internal/contact"
 	"tringldev-server/internal/github"
 	"tringldev-server/internal/lastfm"
 
@@ -16,6 +17,7 @@ func main() {
 
 	lastfmService := lastfm.NewService(cfg)
 	githubService := github.NewService(cfg)
+	contactService := contact.NewService(cfg)
 
 	app := iris.New()
 
@@ -89,6 +91,31 @@ func main() {
 		if err != nil {
 			log.Printf("Failed to send response: %v\n", err)
 		}
+	})
+
+	// Contact form endpoint
+	app.Post("/api/contact", func(ctx iris.Context) {
+		var req contact.ContactRequest
+
+		// Parse form data
+		if err := ctx.ReadForm(&req); err != nil {
+			log.Printf("Error parsing contact form: %v\n", err)
+			ctx.StatusCode(iris.StatusBadRequest)
+			ctx.HTML(`<div class="error-message">❌ Invalid form data</div>`)
+			return
+		}
+
+		// Send via Discord or Email (automatically chooses based on config)
+		err := contactService.Send(&req)
+		if err != nil {
+			log.Printf("Error sending contact message: %v\n", err)
+			ctx.StatusCode(iris.StatusInternalServerError)
+			ctx.HTML(`<div class="error-message">❌ Failed to send message. Please try again later.</div>`)
+			return
+		}
+
+		// Success response (HTMX will swap this into the response div)
+		ctx.HTML(`<div class="success-message">✅ Message sent successfully! I'll get back to you soon.</div>`)
 	})
 
 	addr := ":" + cfg.Port

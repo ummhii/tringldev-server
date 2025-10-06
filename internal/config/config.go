@@ -13,6 +13,17 @@ type Config struct {
 	GithubToken    string
 	GithubUsername string
 	Port           string
+
+	// SMTP Configuration for contact form
+	SMTPHost     string
+	SMTPPort     string
+	SMTPUsername string
+	SMTPPassword string
+	SMTPFrom     string
+	SMTPTo       string
+
+	// Alternative: Discord webhook for contact form
+	DiscordWebhook string
 }
 
 func Load() *Config {
@@ -27,10 +38,24 @@ func Load() *Config {
 		GithubToken:    os.Getenv("GITHUB_TOKEN"),
 		GithubUsername: os.Getenv("GITHUB_USERNAME"),
 		Port:           os.Getenv("PORT"),
+
+		// SMTP settings
+		SMTPHost:     os.Getenv("SMTP_HOST"),
+		SMTPPort:     os.Getenv("SMTP_PORT"),
+		SMTPUsername: os.Getenv("SMTP_USERNAME"),
+		SMTPPassword: os.Getenv("SMTP_PASSWORD"),
+		SMTPFrom:     os.Getenv("SMTP_FROM"),
+		SMTPTo:       os.Getenv("SMTP_TO"),
+
+		// Discord webhook (alternative to SMTP)
+		DiscordWebhook: os.Getenv("DISCORD_WEBHOOK"),
 	}
 
 	if cfg.Port == "" {
 		cfg.Port = "8080"
+	}
+	if cfg.SMTPPort == "" {
+		cfg.SMTPPort = "587"
 	}
 
 	// Warn if required configs are missing
