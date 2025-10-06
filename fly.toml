@@ -2,7 +2,7 @@
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 
 app = "tringldev-server"
-primary_region = "sjc"
+primary_region = "syd"
 
 [build]
 
