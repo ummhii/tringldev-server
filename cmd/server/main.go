@@ -133,6 +133,38 @@ func main() {
 		}
 	})
 
+	// Last.fm endpoint - Get top albums
+	app.Get("/api/top-albums", generalLimiter.Handler(), func(ctx iris.Context) {
+		limitStr := ctx.URLParam("limit")
+		limit := 10
+
+		if limitStr != "" {
+			if parsedLimit, err := strconv.Atoi(limitStr); err == nil {
+				limit = parsedLimit
+			}
+		}
+
+		period := ctx.URLParamDefault("period", "7day")
+
+		topAlbums, err := lastfmService.GetTopAlbums(limit, period)
+		if err != nil {
+			log.Printf("Error fetching top albums: %v\n", err)
+			ctx.StatusCode(iris.StatusInternalServerError)
+			err := ctx.JSON(iris.Map{
+				"error": "Failed to fetch top albums",
+			})
+			if err != nil {
+				log.Printf("Failed to send error response: %v\n", err)
+			}
+			return
+		}
+
+		err = ctx.JSON(topAlbums)
+		if err != nil {
+			log.Printf("Failed to send response: %v\n", err)
+		}
+	})
+
 	// Last.fm endpoint - Get recently played tracks
 	app.Get("/api/recent-tracks", generalLimiter.Handler(), func(ctx iris.Context) {
 		limitStr := ctx.URLParam("limit")

@@ -93,6 +93,30 @@ Returns your top tracks from Last.fm
 }
 ```
 
+### `GET /api/top-albums`
+Returns your top albums from Last.fm
+
+**Query Parameters:**
+- `limit` (optional): Number of albums to return (default: 10, max: 50)
+- `period` (optional): Time period - `weekly`/`7day`, `monthly`/`1month`, `3month`, `6month`, `yearly`/`12month`, `alltime`/`overall` (default: `7day`)
+
+**Example:** `/api/top-albums?limit=15&period=yearly`
+
+**Response:**
+```json
+{
+  "albums": [
+    {
+      "name": "Album Name",
+      "artist": "Artist Name",
+      "playcount": "67",
+      "albumArt": "https://...",
+      "url": "https://www.last.fm/music/..."
+    }
+  ]
+}
+```
+
 ### `GET /api/recent-tracks`
 Returns recently played tracks from Last.fm
 

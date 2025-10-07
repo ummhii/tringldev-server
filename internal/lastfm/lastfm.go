@@ -100,6 +100,35 @@ type TopTracksInfo struct {
 	Tracks []TopTrack `json:"tracks"`
 }
 
+type topAlbumsResponse struct {
+	TopAlbums struct {
+		Album []struct {
+			Name      string `json:"name"`
+			PlayCount string `json:"playcount"`
+			URL       string `json:"url"`
+			Artist    struct {
+				Name string `json:"name"`
+			} `json:"artist"`
+			Image []struct {
+				Text string `json:"#text"`
+				Size string `json:"size"`
+			} `json:"image"`
+		} `json:"album"`
+	} `json:"topalbums"`
+}
+
+type TopAlbum struct {
+	Name      string `json:"name"`
+	Artist    string `json:"artist"`
+	PlayCount string `json:"playcount"`
+	AlbumArt  string `json:"albumArt,omitempty"`
+	URL       string `json:"url"`
+}
+
+type TopAlbumsInfo struct {
+	Albums []TopAlbum `json:"albums"`
+}
+
 type RecentTrack struct {
 	Name      string `json:"name"`
 	Artist    string `json:"artist"`
@@ -376,6 +405,69 @@ func (s *Service) GetTopTracks(limit int, period string) (*TopTracksInfo, error)
 			PlayCount: track.PlayCount,
 			AlbumArt:  albumArt,
 			URL:       track.URL,
+		})
+	}
+
+	return info, nil
+}
+
+func (s *Service) GetTopAlbums(limit int, period string) (*TopAlbumsInfo, error) {
+	if limit <= 0 {
+		limit = 10
+	}
+	if limit > 50 {
+		limit = 50
+	}
+
+	period = validatePeriod(period)
+
+	apiURL := fmt.Sprintf(
+		"https://ws.audioscrobbler.com/2.0/?method=user.gettopalbums&user=%s&api_key=%s&format=json&period=%s&limit=%d",
+		url.QueryEscape(s.config.LastFMUsername),
+		url.QueryEscape(s.config.LastFMAPIKey),
+		period,
+		limit,
+	)
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Get(apiURL)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch from Last.fm: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("last.fm api error %d: %s", resp.StatusCode, string(body))
+	}
+
+	var lastfmResp topAlbumsResponse
+	if err := json.NewDecoder(resp.Body).Decode(&lastfmResp); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	info := &TopAlbumsInfo{
+		Albums: make([]TopAlbum, 0),
+	}
+
+	for _, album := range lastfmResp.TopAlbums.Album {
+		albumArt := ""
+		for _, img := range album.Image {
+			if img.Size == "extralarge" || img.Size == "large" {
+				albumArt = img.Text
+				break
+			}
+		}
+		if albumArt == "" && len(album.Image) > 0 {
+			albumArt = album.Image[len(album.Image)-1].Text
+		}
+
+		info.Albums = append(info.Albums, TopAlbum{
+			Name:      album.Name,
+			Artist:    album.Artist.Name,
+			PlayCount: album.PlayCount,
+			AlbumArt:  albumArt,
+			URL:       album.URL,
 		})
 	}
 
