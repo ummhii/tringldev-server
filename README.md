@@ -154,6 +154,30 @@ Returns your Last.fm listening statistics
 }
 ```
 
+### `GET /api/repo/:name`
+Returns information about any public repository from your GitHub account
+
+**Path Parameter:**
+- `name` (required): Repository name
+
+**Example:** `/api/repo/my-project`
+
+**Response:**
+```json
+{
+  "name": "my-project",
+  "fullName": "username/my-project",
+  "description": "A cool project",
+  "url": "https://github.com/username/my-project",
+  "language": "Go",
+  "stars": 42,
+  "forks": 7,
+  "topics": ["golang", "api"],
+  "updatedAt": "2025-10-08T12:00:00Z",
+  "homepage": "https://example.com"
+}
+```
+
 ### `GET /api/pinned-repo`
 Returns a pinned GitHub repository
 

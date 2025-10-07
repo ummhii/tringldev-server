@@ -248,6 +248,40 @@ func main() {
 		}
 	})
 
+	// GitHub endpoint - Get any public repository by name
+	app.Get("/api/repo/{name:string}", generalLimiter.Handler(), func(ctx iris.Context) {
+		repoName := ctx.Params().Get("name")
+
+		if repoName == "" {
+			ctx.StatusCode(iris.StatusBadRequest)
+			err := ctx.JSON(iris.Map{
+				"error": "Repository name is required",
+			})
+			if err != nil {
+				log.Printf("Failed to send error response: %v\n", err)
+			}
+			return
+		}
+
+		repo, err := githubService.GetSpecificRepository(repoName)
+		if err != nil {
+			log.Printf("Error fetching repository %s: %v\n", repoName, err)
+			ctx.StatusCode(iris.StatusNotFound)
+			err := ctx.JSON(iris.Map{
+				"error": "Repository not found",
+			})
+			if err != nil {
+				log.Printf("Failed to send error response: %v\n", err)
+			}
+			return
+		}
+
+		err = ctx.JSON(repo)
+		if err != nil {
+			log.Printf("Failed to send response: %v\n", err)
+		}
+	})
+
 	// Contact form endpoint (stricter rate limit)
 	app.Post("/api/contact", contactLimiter.Handler(), func(ctx iris.Context) {
 		var req contact.ContactRequest
