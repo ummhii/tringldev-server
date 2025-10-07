@@ -24,12 +24,19 @@ func main() {
 
 	app := iris.New()
 
-	// CORS middleware
-	crs := cors.New().
-		AllowOrigin("*"). // Allow all origins
-		Handler()
+	// CORS middleware - use configured allowed origins
+	allowedOrigins := cfg.AllowedOrigins
+	if len(allowedOrigins) == 0 {
+		allowedOrigins = []string{"*"}
+	}
 
-	app.UseRouter(crs)
+	crs := cors.New()
+	for _, origin := range allowedOrigins {
+		crs.AllowOrigin(origin)
+	}
+	corsHandler := crs.Handler()
+
+	app.UseRouter(corsHandler)
 
 	generalLimiter := middleware.NewRateLimiter(1*time.Second, 10)
 
