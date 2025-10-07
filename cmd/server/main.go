@@ -70,9 +70,9 @@ func main() {
 
 	// Last.fm endpoint - Get top weekly artists
 	app.Get("/api/top-artists", generalLimiter.Handler(), func(ctx iris.Context) {
-		// Optional: Get limit from query parameter (default: 10, max: 50)
+		// Optional: Get limit and period from query parameters
 		limitStr := ctx.URLParam("limit")
-		limit := 10 // default
+		limit := 10
 
 		if limitStr != "" {
 			if parsedLimit, err := strconv.Atoi(limitStr); err == nil {
@@ -80,7 +80,9 @@ func main() {
 			}
 		}
 
-		topArtists, err := lastfmService.GetTopWeeklyArtists(limit)
+		period := ctx.URLParamDefault("period", "7day") // weekly, monthly, yearly, alltime
+
+		topArtists, err := lastfmService.GetTopArtists(limit, period)
 		if err != nil {
 			log.Printf("Error fetching top artists: %v\n", err)
 			ctx.StatusCode(iris.StatusInternalServerError)
@@ -94,6 +96,89 @@ func main() {
 		}
 
 		err = ctx.JSON(topArtists)
+		if err != nil {
+			log.Printf("Failed to send response: %v\n", err)
+		}
+	})
+
+	// Last.fm endpoint - Get top tracks
+	app.Get("/api/top-tracks", generalLimiter.Handler(), func(ctx iris.Context) {
+		limitStr := ctx.URLParam("limit")
+		limit := 10
+
+		if limitStr != "" {
+			if parsedLimit, err := strconv.Atoi(limitStr); err == nil {
+				limit = parsedLimit
+			}
+		}
+
+		period := ctx.URLParamDefault("period", "7day")
+
+		topTracks, err := lastfmService.GetTopTracks(limit, period)
+		if err != nil {
+			log.Printf("Error fetching top tracks: %v\n", err)
+			ctx.StatusCode(iris.StatusInternalServerError)
+			err := ctx.JSON(iris.Map{
+				"error": "Failed to fetch top tracks",
+			})
+			if err != nil {
+				log.Printf("Failed to send error response: %v\n", err)
+			}
+			return
+		}
+
+		err = ctx.JSON(topTracks)
+		if err != nil {
+			log.Printf("Failed to send response: %v\n", err)
+		}
+	})
+
+	// Last.fm endpoint - Get recently played tracks
+	app.Get("/api/recent-tracks", generalLimiter.Handler(), func(ctx iris.Context) {
+		limitStr := ctx.URLParam("limit")
+		limit := 10
+
+		if limitStr != "" {
+			if parsedLimit, err := strconv.Atoi(limitStr); err == nil {
+				limit = parsedLimit
+			}
+		}
+
+		recentTracks, err := lastfmService.GetRecentTracks(limit)
+		if err != nil {
+			log.Printf("Error fetching recent tracks: %v\n", err)
+			ctx.StatusCode(iris.StatusInternalServerError)
+			err := ctx.JSON(iris.Map{
+				"error": "Failed to fetch recent tracks",
+			})
+			if err != nil {
+				log.Printf("Failed to send error response: %v\n", err)
+			}
+			return
+		}
+
+		err = ctx.JSON(recentTracks)
+		if err != nil {
+			log.Printf("Failed to send response: %v\n", err)
+		}
+	})
+
+	// Last.fm endpoint - Get listening stats
+	app.Get("/api/stats", generalLimiter.Handler(), func(ctx iris.Context) {
+		stats, err := lastfmService.GetListeningStats()
+		if err != nil {
+			log.Printf("Error fetching listening stats: %v\n", err)
+			ctx.StatusCode(iris.StatusInternalServerError)
+			err := ctx.JSON(iris.Map{
+				"error": "Failed to fetch listening stats",
+			})
+			if err != nil {
+				log.Printf("Failed to send error response: %v\n", err)
+			}
+			return
+		}
+
+		err = ctx.JSON(stats)
 		if err != nil {
 			log.Printf("Failed to send response: %v\n", err)
 		}

@@ -45,7 +45,13 @@ Returns the currently playing song from Last.fm (or most recently played)
 ```
 
 ### `GET /api/top-artists`
-Returns your top artists for the past 7 days from Last.fm
+Returns your top artists from Last.fm
+
+**Query Parameters:**
+- `limit` (optional): Number of artists to return (default: 10, max: 50)
+- `period` (optional): Time period - `weekly`/`7day`, `monthly`/`1month`, `3month`, `6month`, `yearly`/`12month`, `alltime`/`overall` (default: `7day`)
+
+**Example:** `/api/top-artists?limit=20&period=monthly`
 
 **Response:**
 ```json
@@ -60,6 +66,67 @@ Returns your top artists for the past 7 days from Last.fm
       "playcount": "45"
     }
   ]
+}
+```
+
+### `GET /api/top-tracks`
+Returns your top tracks from Last.fm
+
+**Query Parameters:**
+- `limit` (optional): Number of tracks to return (default: 10, max: 50)
+- `period` (optional): Time period - `weekly`/`7day`, `monthly`/`1month`, `3month`, `6month`, `yearly`/`12month`, `alltime`/`overall` (default: `7day`)
+
+**Example:** `/api/top-tracks?limit=15&period=alltime`
+
+**Response:**
+```json
+{
+  "tracks": [
+    {
+      "name": "Track Name",
+      "artist": "Artist Name",
+      "playcount": "89",
+      "albumArt": "https://...",
+      "url": "https://www.last.fm/music/..."
+    }
+  ]
+}
+```
+
+### `GET /api/recent-tracks`
+Returns recently played tracks from Last.fm
+
+**Query Parameters:**
+- `limit` (optional): Number of tracks to return (default: 10, max: 50)
+
+**Example:** `/api/recent-tracks?limit=20`
+
+**Response:**
+```json
+{
+  "tracks": [
+    {
+      "name": "Track Name",
+      "artist": "Artist Name",
+      "album": "Album Name",
+      "albumArt": "https://...",
+      "url": "https://www.last.fm/music/...",
+      "playedAt": "2025-10-06T12:00:00Z",
+      "isPlaying": false
+    }
+  ]
+}
+```
+
+### `GET /api/stats`
+Returns your Last.fm listening statistics
+
+**Response:**
+```json
+{
+  "totalScrobbles": "15423",
+  "accountAge": "8760h0m0s",
+  "username": "your_username"
 }
 ```
 
