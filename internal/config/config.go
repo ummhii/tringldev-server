@@ -33,7 +33,6 @@ func Load() *Config {
 		DiscordWebhook: os.Getenv("DISCORD_WEBHOOK"),
 	}
 
-	// Parse whitelisted IPs (comma-separated)
 	if whitelistedIPs := os.Getenv("WHITELISTED_IPS"); whitelistedIPs != "" {
 		for _, ip := range splitAndTrim(whitelistedIPs, ",") {
 			if ip != "" {
@@ -42,7 +41,6 @@ func Load() *Config {
 		}
 	}
 
-	// Parse allowed origins (comma-separated)
 	if allowedOrigins := os.Getenv("ALLOWED_ORIGINS"); allowedOrigins != "" {
 		for _, origin := range splitAndTrim(allowedOrigins, ",") {
 			if origin != "" {
@@ -50,7 +48,6 @@ func Load() *Config {
 			}
 		}
 	} else {
-		// Default to allow all if not specified
 		cfg.AllowedOrigins = []string{"*"}
 	}
 
@@ -58,7 +55,6 @@ func Load() *Config {
 		cfg.Port = "8080"
 	}
 
-	// Warn if required configs are missing
 	if cfg.LastFMAPIKey == "" {
 		log.Println("Warning: LASTFM_API_KEY not set")
 	}
@@ -81,19 +77,18 @@ func Load() *Config {
 func splitAndTrim(s, sep string) []string {
 	var result []string
 	for i := 0; i < len(s); {
-		// Skip leading separator
 		for i < len(s) && string(s[i]) == sep {
 			i++
 		}
 		if i >= len(s) {
 			break
 		}
-		// Find next separator
+
 		start := i
 		for i < len(s) && string(s[i]) != sep {
 			i++
 		}
-		// Trim spaces from the token
+
 		token := s[start:i]
 		trimmed := trimSpace(token)
 		if trimmed != "" {
