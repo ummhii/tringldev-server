@@ -289,6 +289,27 @@ func main() {
 		}
 	})
 
+	// GitHub endpoint - Get all public repositories
+	app.Get("/api/repos", generalLimiter.Handler(), func(ctx iris.Context) {
+		repos, err := githubService.GetAllPublicRepositories()
+		if err != nil {
+			log.Printf("Error fetching all repositories: %v\n", err)
+			ctx.StatusCode(iris.StatusInternalServerError)
+			err := ctx.JSON(iris.Map{
+				"error": "Failed to fetch repositories",
+			})
+			if err != nil {
+				log.Printf("Failed to send error response: %v\n", err)
+			}
+			return
+		}
+
+		err = ctx.JSON(repos)
+		if err != nil {
+			log.Printf("Failed to send response: %v\n", err)
+		}
+	})
+
 	// Contact form endpoint (stricter rate limit)
 	app.Post("/api/contact", contactLimiter.Handler(), func(ctx iris.Context) {
 		var req contact.ContactRequest
