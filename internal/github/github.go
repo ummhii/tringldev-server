@@ -86,6 +86,49 @@ func (s *Service) GetPinnedRepository() (*PinnedRepo, error) {
 	return toPinnedRepo(&repo), nil
 }
 
+func (s *Service) GetAllPublicRepositories() ([]*PinnedRepo, error) {
+	url := fmt.Sprintf("https://api.github.com/users/%s/repos?type=public&sort=updated&per_page=6", s.config.GithubUsername)
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Accept", "application/vnd.github.v3+json")
+	if s.config.GithubToken != "" {
+		req.Header.Set("Authorization", "Bearer "+s.config.GithubToken)
+	}
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch repositories: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("github API error %d: %s", resp.StatusCode, string(body))
+	}
+
+	var repos []repository
+	if err := json.NewDecoder(resp.Body).Decode(&repos); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	if len(repos) == 0 {
+		return nil, fmt.Errorf("no repositories found")
+	}
+
+	// Convert all repos to PinnedRepo format
+	pinnedRepos := make([]*PinnedRepo, 0, len(repos))
+	for i := range repos {
+		pinnedRepos = append(pinnedRepos, toPinnedRepo(&repos[i]))
+	}
+
+	return pinnedRepos, nil
+}
+
 func (s *Service) GetSpecificRepository(repoName string) (*PinnedRepo, error) {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/%s", s.config.GithubUsername, repoName)
 
