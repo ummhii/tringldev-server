@@ -178,6 +178,41 @@ Returns information about any public repository from your GitHub account
 }
 ```
 
+### `GET /api/repos`
+Returns all public repositories from your GitHub account (up to 6 most recently updated)
+
+**Example:** `/api/repos`
+
+**Response:**
+```json
+[
+  {
+    "name": "repo-1",
+    "fullName": "username/repo-1",
+    "description": "First repository",
+    "url": "https://github.com/username/repo-1",
+    "language": "Go",
+    "stars": 42,
+    "forks": 5,
+    "topics": ["golang", "api"],
+    "updatedAt": "2025-10-08T12:00:00Z",
+    "homepage": "https://example.com"
+  },
+  {
+    "name": "repo-2",
+    "fullName": "username/repo-2",
+    "description": "Second repository",
+    "url": "https://github.com/username/repo-2",
+    "language": "TypeScript",
+    "stars": 15,
+    "forks": 3,
+    "topics": ["typescript", "frontend"],
+    "updatedAt": "2025-10-07T10:30:00Z"
+  }
+]
+```
+
+
 ### `GET /api/pinned-repo`
 Returns a pinned GitHub repository
 
