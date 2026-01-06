@@ -1,9 +1,11 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"strconv"
 	"time"
+	"tringldev-server/internal/blog"
 
 	"tringldev-server/internal/config"
 	"tringldev-server/internal/contact"
@@ -13,6 +15,7 @@ import (
 
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/middleware/cors"
+	"github.com/kataras/iris/v12/x/errors"
 )
 
 func main() {
@@ -23,6 +26,10 @@ func main() {
 	contactService := contact.NewService(cfg)
 
 	app := iris.New()
+
+	if err := blog.InitDatabase(); err != nil {
+		log.Fatalf("Failed to initialise database: %v\n", err)
+	}
 
 	// CORS middleware - use configured allowed origins
 	allowedOrigins := cfg.AllowedOrigins
@@ -330,6 +337,31 @@ func main() {
 		}
 
 		ctx.HTML(`<div class="success-message">Message sent successfully! I'll get back to you soon.</div>`)
+	})
+
+	// Get list of blogs information
+	app.Get("/api/blog-list", generalLimiter.Handler(), func(ctx iris.Context) {
+		blogs, err := blog.GetListOfBlogInfo()
+		if err != nil {
+			ctx.StopWithJSON(iris.StatusInternalServerError, iris.Map{"error": err.Error()})
+			return
+		}
+		ctx.JSON(blogs)
+	})
+
+	// Get a specific blog post by ID
+	app.Get("/api/blogs/{id:int}", generalLimiter.Handler(), func(ctx iris.Context) {
+		id, _ := ctx.Params().GetInt("id")
+		post, err := blog.GetBlogByID(id)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				ctx.StopWithStatus(iris.StatusNotFound)
+			} else {
+				ctx.StopWithJSON(iris.StatusInternalServerError, iris.Map{"error": err.Error()})
+			}
+			return
+		}
+		ctx.JSON(post)
 	})
 
 	addr := ":" + cfg.Port
